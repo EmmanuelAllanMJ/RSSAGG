@@ -1,15 +1,22 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 
+	"github.com/EmmanuelAllanMJ/rssagg/internal/database"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/cors"
 	"github.com/joho/godotenv"
+	_ "github.com/lib/pq"
 )
+
+type apiConfig struct {
+	DB *database.Queries
+}
 
 func main() {
 	fmt.Println("Hello World")
@@ -20,6 +27,21 @@ func main() {
 	if portString == "" {
 		log.Fatal("$PORT must be set")
 	}
+
+	dbUrl := os.Getenv("DATABASE_URL")
+	if dbUrl == "" {
+		log.Fatal("$DATABASE_URL must be set")
+	}
+	// conect to the database
+	conn, err := sql.Open("postgres", dbUrl)
+	if err != nil {
+		log.Fatal("cant connect to db", err)
+	}
+
+	apiConfig := apiConfig{
+		DB: database.New(conn),
+	}
+
 	router := chi.NewRouter()
 
 	router.Use(cors.Handler(cors.Options{
@@ -35,6 +57,7 @@ func main() {
 	v1Route := chi.NewRouter()
 	v1Route.Get("/healthz", handleRediness)
 	v1Route.Get("/err", handleErr)
+	v1Route.Post("/users", apiConfig.handlerCreateUser)
 
 	router.Mount("/v1", v1Route)
 
@@ -43,7 +66,7 @@ func main() {
 		Handler: router,
 	}
 	log.Printf("Listening on port %s", portString)
-	err := srv.ListenAndServe()
+	err = srv.ListenAndServe()
 	if err != nil {
 		log.Fatal(err)
 	}
