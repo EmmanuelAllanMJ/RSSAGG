@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/EmmanuelAllanMJ/rssagg/internal/database"
+	"github.com/go-chi/chi"
 	"github.com/google/uuid"
 )
 
@@ -51,4 +52,24 @@ func (apiConfig *apiConfig) handlerGetFeedFollows(w http.ResponseWriter, r *http
 	}
 
 	respondWithJson(w, 200, feed_followsResponse)
+}
+
+func (apiConfig *apiConfig) handlerDeleteFeedFollow(w http.ResponseWriter, r *http.Request, user database.User) {
+	feedFollowID, err := uuid.Parse(chi.URLParam(r, "feedFollowID"))
+
+	if err != nil {
+		respondWithError(w, http.StatusBadRequest, fmt.Sprintf("Invalid feedFollowID: %v", err))
+		return
+	}
+
+	err = apiConfig.DB.DeleteFeedFollow(r.Context(), database.DeleteFeedFollowParams{
+		UserID: user.ID,
+		FeedID: feedFollowID,
+	})
+
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, fmt.Sprintf("Error deleting feed follow: %v", err))
+		return
+	}
+	respondWithJson(w, 200, struct{}{})
 }
