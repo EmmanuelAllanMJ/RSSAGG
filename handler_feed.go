@@ -10,9 +10,10 @@ import (
 	"github.com/google/uuid"
 )
 
-func (apiConfig *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Request) {
+func (apiConfig *apiConfig) handlerCreateFeed(w http.ResponseWriter, r *http.Request, user database.User) {
 	type parameters struct {
 		Name string `json:"name"`
+		Url  string `json:"url"`
 	}
 	params := parameters{}
 	err := json.NewDecoder(r.Body).Decode(&params)
@@ -21,11 +22,13 @@ func (apiConfig *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	user, err := apiConfig.DB.CreateUser(r.Context(), database.CreateUserParams{
+	feed, err := apiConfig.DB.CreateFeed(r.Context(), database.CreateFeedParams{
 		ID:        uuid.New(),
 		CreatedAt: time.Now().UTC(),
 		UpdatedAt: time.Now().UTC(),
 		Name:      params.Name,
+		Url:       params.Url,
+		UserID:    user.ID,
 	})
 
 	if err != nil {
@@ -33,10 +36,5 @@ func (apiConfig *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	respondWithJson(w, 201, databaseUserToUser(user))
-}
-
-func (apiConfig *apiConfig) handlerGetUserByApiKey(w http.ResponseWriter, r *http.Request, user database.User) {
-
-	respondWithJson(w, 200, databaseUserToUser(user))
+	respondWithJson(w, 201, databaseFeedToFeed(feed))
 }
