@@ -13,3 +13,10 @@ CREATE TABLE posts (
     updated_at TIMESTAMP,
     feed_id UUID NOT NULL REFERENCES feeds(id) ON DELETE CASCADE
 );
+
+-- name: GetPostForUser :many
+SELECT posts.* FROM posts
+JOIN feed_follow ON posts.feed_id = feed_follow.feed_id
+WHERE feed_follow.user_id = $1
+ORDER BY posts.published_at DESC
+LIMIT $2;

@@ -74,6 +74,7 @@ func main() {
 	v1Route.Get("/feed_follows", apiConfig.middlewareAuth(apiConfig.handlerGetFeedFollows))
 	v1Route.Delete("/feed_follows/{feedFollowID}", apiConfig.middlewareAuth(apiConfig.handlerDeleteFeedFollow))
 
+	v1Route.Get("/posts", apiConfig.middlewareAuth(apiConfig.handlerGetPostsForUser))
 	router.Mount("/v1", v1Route)
 
 	srv := &http.Server{
