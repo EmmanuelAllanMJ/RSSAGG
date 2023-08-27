@@ -36,3 +36,19 @@ func (apiConfig *apiConfig) handlerCreateFeedFollow(w http.ResponseWriter, r *ht
 
 	respondWithJson(w, 201, databaseFeedFollowToFeedFollow(feed_follow))
 }
+
+func (apiConfig *apiConfig) handlerGetFeedFollows(w http.ResponseWriter, r *http.Request, user database.User) {
+	feed_follows, err := apiConfig.DB.GetFeedFollows(r.Context(), user.ID)
+
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, fmt.Sprintf("Error getting feed follows: %v", err))
+		return
+	}
+
+	var feed_followsResponse []FeedFollow
+	for _, feed_follow := range feed_follows {
+		feed_followsResponse = append(feed_followsResponse, databaseFeedFollowToFeedFollow(feed_follow))
+	}
+
+	respondWithJson(w, 200, feed_followsResponse)
+}
