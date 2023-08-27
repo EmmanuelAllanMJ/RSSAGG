@@ -9,14 +9,10 @@ import (
 
 type RSSFeed struct {
 	Channel struct {
-		Title       string `xml:"title"`
-		Description string `xml:"description"`
-		Link        string `xml:"link"`
-		Item        []struct {
-			Title       string `xml:"title"`
-			Description string `xml:"description"`
-			Link        string `xml:"link"`
-		} `xml:"item"`
+		Title       string    `xml:"title"`
+		Description string    `xml:"description"`
+		Link        string    `xml:"link"`
+		Item        []RSSItem `xml:"item"`
 	} `xml:"channel"`
 }
 
